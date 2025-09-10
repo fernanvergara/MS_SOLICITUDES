@@ -1,7 +1,7 @@
 package co.com.sti.config;
 
 import co.com.sti.model.apply.gateways.ApplyRepository;
-import co.com.sti.model.drivenports.IUserExistenceChecker;
+import co.com.sti.model.drivenports.IUserExtras;
 import co.com.sti.usecase.applyloan.ApplyLoanUseCase;
 import co.com.sti.usecase.transaction.TransactionExecutor;
 import org.junit.jupiter.api.Test;
@@ -52,8 +52,8 @@ public class UseCasesConfigTest {
         }
 
         @Bean
-        public IUserExistenceChecker userExistenceChecker() {
-            return mock(IUserExistenceChecker.class);
+        public IUserExtras userExistenceChecker() {
+            return mock(IUserExtras.class);
         }
 
         @Bean

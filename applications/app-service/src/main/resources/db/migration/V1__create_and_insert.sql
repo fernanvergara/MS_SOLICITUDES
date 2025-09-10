@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS solicitud (
     fecha_solicitud DATE DEFAULT CURRENT_DATE,
     id_estado INT NOT NULL,
     id_tipo_prestamo INT NOT NULL,
+    intereses NUMERIC(15, 2) NOT NULL,
     CONSTRAINT fk_solicitud_estado FOREIGN KEY (id_estado)
         REFERENCES estados (id_estado),
     CONSTRAINT fk_solicitud_tipo_prestamo FOREIGN KEY (id_tipo_prestamo)

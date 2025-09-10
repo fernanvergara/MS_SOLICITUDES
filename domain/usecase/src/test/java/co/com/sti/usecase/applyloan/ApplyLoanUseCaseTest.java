@@ -2,7 +2,7 @@ package co.com.sti.usecase.applyloan;
 
 import co.com.sti.model.apply.Apply;
 import co.com.sti.model.apply.gateways.ApplyRepository;
-import co.com.sti.model.drivenports.IUserExistenceChecker;
+import co.com.sti.model.drivenports.IUserExtras;
 import co.com.sti.usecase.exceptios.UserNotExistsException;
 import co.com.sti.usecase.transaction.TransactionExecutor;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +27,7 @@ public class ApplyLoanUseCaseTest {
     private ApplyRepository applyRepository;
 
     @Mock
-    private IUserExistenceChecker userExistenceChecker;
+    private IUserExtras userExistenceChecker;
 
     @Mock
     private TransactionExecutor transactionExecutor;

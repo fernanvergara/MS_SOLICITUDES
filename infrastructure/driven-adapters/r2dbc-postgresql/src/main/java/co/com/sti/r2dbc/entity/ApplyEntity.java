@@ -38,4 +38,7 @@ public class ApplyEntity {
     @Column("id_tipo_prestamo")
     private Integer idLoanType;
 
+    @Column("intereses")
+    private BigDecimal rateInterest;
+
 }
