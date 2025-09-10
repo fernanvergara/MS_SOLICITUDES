@@ -3,7 +3,9 @@ package co.com.sti.api.config;
 import co.com.sti.api.Handler;
 import co.com.sti.api.RouterRest;
 import co.com.sti.api.mapper.ApplyDTOMapper;
+import co.com.sti.api.mapper.RequestDTOMapper;
 import co.com.sti.usecase.applyloan.IApplyLoanUseCase;
+import co.com.sti.usecase.requestapplylist.IRequestApplyListUseCase;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -12,14 +14,27 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @WebFluxTest
-@Import({RouterRest.class, Handler.class, CorsConfig.class, SecurityHeadersConfig.class, ConfigTest.TestConfig.class})
+@Import({RouterRest.class, Handler.class, CorsConfig.class, SecurityHeadersConfig.class, ConfigTest.TestConfig.class, ConfigTest.SecurityTestConfig.class})
 class ConfigTest {
 
     @Autowired
     private WebTestClient webTestClient;
+
+    @Configuration
+    static class SecurityTestConfig {
+        @Bean
+        public SecurityWebFilterChain securityTestFilterChain(ServerHttpSecurity http) {
+            return http
+                    .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                    .authorizeExchange(exchange -> exchange.anyExchange().permitAll())
+                    .build();
+        }
+    }
 
     @Configuration
     static class TestConfig {
@@ -29,8 +44,18 @@ class ConfigTest {
         }
 
         @Bean
+        IRequestApplyListUseCase requestApplyListUseCase() {
+            return Mockito.mock(IRequestApplyListUseCase.class);
+        }
+
+        @Bean
         ApplyDTOMapper userDTOMapper() {
             return Mockito.mock(ApplyDTOMapper.class);
+        }
+
+        @Bean
+        RequestDTOMapper requestDTOMapper() {
+            return Mockito.mock(RequestDTOMapper.class);
         }
 
         @Bean

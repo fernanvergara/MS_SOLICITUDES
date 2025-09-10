@@ -55,6 +55,15 @@ public class GlobalExceptionHandler {
         return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse));
     }
 
+    @ExceptionHandler(NotContentException.class)
+    public Mono<ResponseEntity<Map<String, String>>> handleNotContentException(NotContentException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Sin contenido");
+        errorResponse.put("message", ex.getMessage());
+        log.error(errorResponse.toString());
+        return Mono.just(ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorResponse));
+    }
+
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<Map<String, String>>> handleAllException(Exception ex) {
         Map<String, String> errorResponse = new HashMap<>();
