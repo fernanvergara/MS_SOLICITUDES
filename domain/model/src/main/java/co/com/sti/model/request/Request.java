@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class Request {
 
+    private Long id;
     private BigDecimal amount;
     private Integer timeLimit;
     private String email;

@@ -18,7 +18,7 @@ public class WebClientConfig {
     public WebClient authMSWebClient() {
         // La URL base del microservicio de autenticacion.
         return WebClient.builder()
-                .baseUrl("http://localhost:8080")
+                .baseUrl("http://autenticacion:8080")
                 .filter(addAuthorizationHeader())
                 .build();
     }

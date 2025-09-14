@@ -1,9 +1,10 @@
 package co.com.sti.r2dbc;
 
 import co.com.sti.model.apply.Apply;
+import co.com.sti.model.paginator.PagedResponse;
 import co.com.sti.model.request.Request;
-import co.com.sti.model.request.paginator.Pagination;
-import co.com.sti.model.request.paginator.SortBy;
+import co.com.sti.model.paginator.Pagination;
+import co.com.sti.model.paginator.SortBy;
 import co.com.sti.model.state.State;
 import co.com.sti.r2dbc.dto.UserDTO;
 import co.com.sti.r2dbc.entity.ApplyEntity;
@@ -16,6 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -95,7 +99,8 @@ class MyReactiveRepositoryAdapterTest {
                 "TestLoan",
                 BigDecimal.ZERO,
                 new BigDecimal(100000),
-                new BigDecimal(12));
+                new BigDecimal(12),
+                true);
     }
 
     @Test
@@ -132,18 +137,23 @@ class MyReactiveRepositoryAdapterTest {
                                 .build()))
                         .build();
 
-        when(repository.findAllByIdStateIn(any(List.class), any(Pageable.class)))
+        when(repository.findAllByIdStateIn(any(List.class)))
                 .thenReturn(Flux.just(applyEntity));
+
         when(mapper.map(any(ApplyEntity.class), any())).thenReturn(apply);
         when(userExtras.dataUser(any())).thenReturn(Mono.just(userDTO));
         when(repositoryTypeLoan.findById(any(Integer.class))).thenReturn(Mono.just(typeLoan));
 
-        Mono<List<Request>> result = repositoryAdapter.findAllForReview(pagination);
+        Mono<PagedResponse<Request>> result = repositoryAdapter.findAllForReview(pagination);
 
         StepVerifier.create(result)
-                .expectNextMatches(requests -> !requests.isEmpty() &&
-                        requests.get(0).getNames().equals("John Doe") &&
-                        requests.get(0).getEmail().equals("john.doe@example.com"))
+                .expectNextMatches(pagedResponse ->
+                        !pagedResponse.getContent().isEmpty() &&
+                                pagedResponse.getContent().get(0).getNames().equals("John Doe") &&
+                                pagedResponse.getContent().get(0).getEmail().equals("john.doe@example.com") &&
+                                pagedResponse.getTotalElements() == 1 &&
+                                pagedResponse.getTotalPages() == 1
+                )
                 .verifyComplete();
     }
 
@@ -157,15 +167,18 @@ class MyReactiveRepositoryAdapterTest {
                         .direction("desc")
                         .build()))
                 .build();
-        when(repository.findAllByIdStateIn(any(List.class), any(Pageable.class)))
+
+        when(repository.findAllByIdStateIn(any(List.class)))
                 .thenReturn(Flux.just(applyEntity));
+
         when(mapper.map(any(ApplyEntity.class), any())).thenReturn(apply);
         when(userExtras.dataUser(any())).thenReturn(Mono.empty());
+        when(repositoryTypeLoan.findById(any(Integer.class))).thenReturn(Mono.just(typeLoan));
 
-        Mono<List<Request>> result = repositoryAdapter.findAllForReview(pagination);
+        Mono<PagedResponse<Request>> result = repositoryAdapter.findAllForReview(pagination);
 
         StepVerifier.create(result)
-                .expectNextMatches(List::isEmpty)
+                .expectNextMatches(pagedResponse -> pagedResponse.getContent().isEmpty() && pagedResponse.getTotalElements() == 1)
                 .verifyComplete();
     }
 
@@ -180,15 +193,20 @@ class MyReactiveRepositoryAdapterTest {
                         .build()))
                 .build();
 
-        when(repository.findAllByIdStateIn(any(List.class), any(Pageable.class)))
+        when(repository.findAllByIdStateIn(any(List.class)))
                 .thenReturn(Flux.just(applyEntity));
+
         when(mapper.map(any(ApplyEntity.class), any())).thenReturn(apply);
         when(userExtras.dataUser(any())).thenReturn(Mono.error(new RuntimeException("Simulated error")));
+        when(repositoryTypeLoan.findById(any(Integer.class))).thenReturn(Mono.just(typeLoan));
 
-        Mono<List<Request>> result = repositoryAdapter.findAllForReview(pagination);
+        Mono<PagedResponse<Request>> result = repositoryAdapter.findAllForReview(pagination);
 
         StepVerifier.create(result)
-                .expectNextMatches(List::isEmpty)
+                .expectNextMatches(pagedResponse ->
+                        pagedResponse.getContent().isEmpty() &&
+                                pagedResponse.getTotalElements() == 1
+                )
                 .verifyComplete();
     }
 
@@ -229,7 +247,8 @@ class MyReactiveRepositoryAdapterTest {
                 "TestLoan",
                 BigDecimal.ZERO,
                 new BigDecimal(100000),
-                new BigDecimal(15));
+                new BigDecimal(15),
+                true);
 
         Pagination pagination = Pagination.builder()
                 .page(0)
@@ -240,8 +259,10 @@ class MyReactiveRepositoryAdapterTest {
                         .build()))
                 .build();
 
-        when(repository.findAllByIdStateIn(any(List.class), any(Pageable.class)))
-                .thenReturn(Flux.just(applyEntity, anotherApplyEntity));
+        List<ApplyEntity> entities = List.of(applyEntity, anotherApplyEntity);
+        when(repository.findAllByIdStateIn(any(List.class)))
+                .thenReturn(Flux.fromIterable(entities));
+
         when(mapper.map(applyEntity, Apply.class)).thenReturn(apply);
         when(mapper.map(anotherApplyEntity, Apply.class)).thenReturn(anotherApply);
         when(userExtras.dataUser("123456789")).thenReturn(Mono.just(userDTO));
@@ -249,12 +270,16 @@ class MyReactiveRepositoryAdapterTest {
         when(repositoryTypeLoan.findById(1)).thenReturn(Mono.just(typeLoan));
         when(repositoryTypeLoan.findById(2)).thenReturn(Mono.just(typeLoan2));
 
-        Mono<List<Request>> result = repositoryAdapter.findAllForReview(pagination);
+        Mono<PagedResponse<Request>> result = repositoryAdapter.findAllForReview(pagination);
 
         StepVerifier.create(result)
-                .expectNextMatches(requests -> requests.size() == 2 &&
-                        requests.get(0).getNames().equals("John Doe") &&
-                        requests.get(1).getNames().equals("Jane Smith"))
+                .expectNextMatches(pagedResponse ->
+                        pagedResponse.getContent().size() == 2 &&
+                                pagedResponse.getContent().get(0).getNames().equals("John Doe") &&
+                                pagedResponse.getContent().get(1).getNames().equals("Jane Smith") &&
+                                pagedResponse.getTotalElements() == 2 &&
+                                pagedResponse.getTotalPages() == 1
+                )
                 .verifyComplete();
     }
 
@@ -269,16 +294,20 @@ class MyReactiveRepositoryAdapterTest {
                         .build()))
                 .build();
 
-        when(repository.findAllByIdStateIn(any(List.class), any(Pageable.class)))
+        when(repository.findAllByIdStateIn(any(List.class)))
                 .thenReturn(Flux.just(applyEntity));
+
         when(mapper.map(any(ApplyEntity.class), any())).thenReturn(apply);
         when(userExtras.dataUser(any())).thenReturn(Mono.just(userDTO));
         when(repositoryTypeLoan.findById(any(Integer.class))).thenReturn(Mono.empty());
 
-        Mono<List<Request>> result = repositoryAdapter.findAllForReview(pagination);
+        Mono<PagedResponse<Request>> result = repositoryAdapter.findAllForReview(pagination);
 
         StepVerifier.create(result)
-                .expectNextMatches(List::isEmpty)
+                .expectNextMatches(pagedResponse ->
+                        pagedResponse.getContent().isEmpty() &&
+                                pagedResponse.getTotalElements() == 1
+                )
                 .verifyComplete();
     }
 
@@ -293,16 +322,20 @@ class MyReactiveRepositoryAdapterTest {
                         .build()))
                 .build();
 
-        when(repository.findAllByIdStateIn(any(List.class), any(Pageable.class)))
+        when(repository.findAllByIdStateIn(any(List.class)))
                 .thenReturn(Flux.just(applyEntity));
+
         when(mapper.map(any(ApplyEntity.class), any())).thenReturn(apply);
         when(userExtras.dataUser(any())).thenReturn(Mono.just(userDTO));
         when(repositoryTypeLoan.findById(any(Integer.class))).thenReturn(Mono.error(new RuntimeException("Simulated TypeLoan error")));
 
-        Mono<List<Request>> result = repositoryAdapter.findAllForReview(pagination);
+        Mono<PagedResponse<Request>> result = repositoryAdapter.findAllForReview(pagination);
 
         StepVerifier.create(result)
-                .expectNextMatches(List::isEmpty)
+                .expectNextMatches(pagedResponse ->
+                        pagedResponse.getContent().isEmpty() &&
+                                pagedResponse.getTotalElements() == 1
+                )
                 .verifyComplete();
     }
 

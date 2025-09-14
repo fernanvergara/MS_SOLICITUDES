@@ -2,20 +2,20 @@ server:
   port: 8081
 spring:
   application:
-    name: "CrediYa"
+    name: "solicitudes"
   devtools:
     add-properties: false
-  h2:
-    console:
-      enabled: true
-      path: "/h2"
-  profiles:
-    include: null
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    url: "jdbc:postgresql://db_solicitudes:5432/solicitudes_db"
+    user: "postgres"
+    password: "Misional123@"
+    clear-checksums: true
 adapters:
   r2dbc:
-    host: "localhost"
+    host: "db_solicitudes"
     port: 5432
-    database: "crediya_solicitudes"
+    database: "solicitudes_db"
     schema: "public"
     username: "postgres"
     password: "Misional123@"

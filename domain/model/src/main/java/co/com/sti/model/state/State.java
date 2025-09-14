@@ -9,7 +9,8 @@ public enum State {
     PENDING(1, "PENDIENTE", "La solicitud está en espera de revisión."),
     REVIEW(2, "REVISION", "La solicitud esta siendo revisada por un asesor."),
     REJECTED(3, "RECHAZADA", "La solicitud ha sido aprobada."),
-    APPROVED(4,"APROBADA","La solicitud ha sido rechazada.");
+    APPROVED(4,"APROBADA","La solicitud ha sido rechazada."),
+    ARCHIVED(5, "ARCHIVADA", "La solicitud fue descartada y pasada a archivo");
 
     private final int idState;
     private final String name;

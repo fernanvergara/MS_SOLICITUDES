@@ -1,8 +1,8 @@
 package co.com.sti.api.exceptions;
 
 import co.com.sti.model.drivenports.exceptions.ServiceUnavailableException;
-import co.com.sti.usecase.exceptios.UserAlreadyExistsException;
-import co.com.sti.usecase.exceptios.UserNotExistsException;
+import co.com.sti.usecase.exception.UserAlreadyExistsException;
+import co.com.sti.usecase.exception.UserNotExistsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

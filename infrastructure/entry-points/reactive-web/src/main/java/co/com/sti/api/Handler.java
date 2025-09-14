@@ -1,12 +1,13 @@
 package co.com.sti.api;
 
 import co.com.sti.api.dto.ApplyDTO;
+import co.com.sti.api.dto.RequestDTO;
 import co.com.sti.api.exceptions.InvalidUserDataException;
 import co.com.sti.api.exceptions.NotContentException;
 import co.com.sti.api.mapper.ApplyDTOMapper;
 import co.com.sti.api.mapper.RequestDTOMapper;
-import co.com.sti.model.request.paginator.Pagination;
-import co.com.sti.model.request.paginator.SortBy;
+import co.com.sti.model.paginator.Pagination;
+import co.com.sti.model.paginator.SortBy;
 import co.com.sti.usecase.applyloan.IApplyLoanUseCase;
 import co.com.sti.usecase.requestapplylist.IRequestApplyListUseCase;
 import jakarta.validation.ConstraintViolation;
@@ -19,10 +20,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -84,27 +82,29 @@ public class Handler {
                 .build();
 
         return requestApplyListUseCase.applyList(pagination)
-                .flatMap(requests -> {
-                    if (requests.isEmpty()) {
-                        return Mono.empty();
+                .flatMap(pagedResponse  -> {
+                    if (pagedResponse.getContent().isEmpty()) {
+                        log.warn("No se encontraron solicitudes. Devolviendo 204 Not Content.");
+                        return Mono.error(new NotContentException("No se encontraron solicitudes para revisar"));
                     } else {
-                        return Mono.just(requests);
+                        log.info("Listado de solicitudes encontrado");
+
+                        List<RequestDTO> requestDTOs = pagedResponse.getContent().stream()
+                                .map(requestDTOMapper::toDTO)
+                                .collect(Collectors.toList());
+
+                        Map<String, Object> responseData = new HashMap<>();
+                        responseData.put("content", requestDTOs);
+                        responseData.put("page", pagedResponse.getPage());
+                        responseData.put("size", pagedResponse.getSize());
+                        responseData.put("totalElements", pagedResponse.getTotalElements());
+                        responseData.put("totalPages", pagedResponse.getTotalPages());
+                        responseData.put("last", pagedResponse.isLast());
+
+                        return ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(responseData);
                     }
-                })
-                .map(requests -> requests.stream()
-                        .map(requestDTOMapper::toDTO)
-                        .collect(Collectors.toList()))
-                .flatMap(requestDTOs -> {
-                    log.info("Listado de solicitudes encontrado");
-                    return ServerResponse.ok()
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .bodyValue(requestDTOs);
-                })
-                .switchIfEmpty(
-                        Mono.defer(() -> {
-                            log.warn("No se encontraron solicitudes. Devolviendo 204 Not Content.");
-                            return Mono.error(new NotContentException("No se encontraron solicitudes para revisar"));
-                        })
-                );
+                });
     }
 }

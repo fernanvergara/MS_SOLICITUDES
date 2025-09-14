@@ -3,7 +3,7 @@ package co.com.sti.usecase.applyloan;
 import co.com.sti.model.apply.Apply;
 import co.com.sti.model.apply.gateways.ApplyRepository;
 import co.com.sti.model.drivenports.IUserExtras;
-import co.com.sti.usecase.exceptios.UserNotExistsException;
+import co.com.sti.usecase.exception.UserNotExistsException;
 import co.com.sti.usecase.transaction.TransactionExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
