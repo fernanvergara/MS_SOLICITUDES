@@ -3,24 +3,22 @@ package co.com.sti.api;
 import co.com.sti.api.dto.ApplyDTO;
 import co.com.sti.api.dto.RequestDTO;
 import co.com.sti.api.exceptions.GlobalExceptionHandler;
-import co.com.sti.api.exceptions.InvalidUserDataException;
 import co.com.sti.api.mapper.ApplyDTOMapper;
 import co.com.sti.api.mapper.RequestDTOMapper;
 import co.com.sti.api.security.JwtValidator;
 import co.com.sti.model.apply.Apply;
+import co.com.sti.model.paginator.PagedResponse;
 import co.com.sti.model.request.Request;
 import co.com.sti.usecase.applyloan.IApplyLoanUseCase;
-import co.com.sti.usecase.exceptios.UserNotExistsException;
+import co.com.sti.usecase.exception.UserNotExistsException;
 import co.com.sti.usecase.requestapplylist.IRequestApplyListUseCase;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Path;
 import jakarta.validation.Validator;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -29,7 +27,6 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
@@ -204,8 +201,16 @@ class RouterRestTest {
         Request mockRequest = new Request();
         RequestDTO mockRequestDTO = new RequestDTO();
         List<Request> requestList = List.of(mockRequest);
+        PagedResponse<Request> pagedResponse = PagedResponse.<Request>builder()
+                .content(requestList)
+                .page(0)
+                .size(10)
+                .totalElements(1)
+                .totalPages(1)
+                .last(true)
+                .build();
 
-        when(requestApplyListUseCase.applyList(any())).thenReturn(Mono.just(requestList));
+        when(requestApplyListUseCase.applyList(any())).thenReturn(Mono.just(pagedResponse));
         when(requestDTOMapper.toDTO(any(Request.class))).thenReturn(mockRequestDTO);
 
         // Act & Assert
@@ -226,7 +231,15 @@ class RouterRestTest {
 
     @Test
     void testListLoanAppliesEntryPointNoContent() {
-        when(requestApplyListUseCase.applyList(any())).thenReturn(Mono.just(Collections.emptyList()));
+        PagedResponse<Request> pagedResponse = PagedResponse.<Request>builder()
+                .content(Collections.emptyList())
+                .page(0)
+                .size(10)
+                .totalElements(0)
+                .totalPages(0)
+                .last(true)
+                .build();
+        when(requestApplyListUseCase.applyList(any())).thenReturn(Mono.just(pagedResponse));
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/api/v1/solicitud")

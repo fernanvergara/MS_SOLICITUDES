@@ -1,4 +1,4 @@
-package co.com.sti.model.request.paginator;
+package co.com.sti.model.paginator;
 
 import lombok.Builder;
 import lombok.Getter;

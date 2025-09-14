@@ -1,11 +1,10 @@
 package co.com.sti.usecase.requestapplylist;
 
 import co.com.sti.model.apply.gateways.ApplyRepository;
+import co.com.sti.model.paginator.PagedResponse;
 import co.com.sti.model.request.Request;
-import co.com.sti.model.request.paginator.Pagination;
+import co.com.sti.model.paginator.Pagination;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 public class RequestApplyListUseCase implements IRequestApplyListUseCase{
 
@@ -16,7 +15,7 @@ public class RequestApplyListUseCase implements IRequestApplyListUseCase{
     }
 
     @Override
-    public Mono<List<Request>> applyList(Pagination pagination) {
+    public Mono<PagedResponse<Request>> applyList(Pagination pagination) {
         return applyRepository.findAllForReview(pagination);
     }
 

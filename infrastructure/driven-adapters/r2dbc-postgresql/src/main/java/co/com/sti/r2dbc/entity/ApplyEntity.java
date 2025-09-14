@@ -26,7 +26,7 @@ public class ApplyEntity {
     @Column("monto")
     private BigDecimal amount;
 
-    @Column("plazo")
+    @Column("plazo_maximo_dias")
     private Integer timeLimit;
 
     @Column("fecha_solicitud")
@@ -37,8 +37,5 @@ public class ApplyEntity {
 
     @Column("id_tipo_prestamo")
     private Integer idLoanType;
-
-    @Column("intereses")
-    private BigDecimal rateInterest;
 
 }
