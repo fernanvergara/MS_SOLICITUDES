@@ -2,7 +2,7 @@ package co.com.sti.r2dbc.extras;
 
 import co.com.sti.model.drivenports.IUserExtras;
 import co.com.sti.model.drivenports.exceptions.ServiceUnavailableException;
-import co.com.sti.r2dbc.dto.UserDTO;
+import co.com.sti.model.drivenports.dto.UserDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -37,6 +37,7 @@ public class UserExtrasImpl implements IUserExtras {
                 });
     }
 
+    @Override
     public Mono<UserDTO> dataUser(String identification) {
         return getUserWebClient.get()
                 .uri("/api/v1/usuarios/{identification}", identification)

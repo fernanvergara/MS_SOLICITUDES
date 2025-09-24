@@ -143,4 +143,15 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
             return null;
         }
     }
+
+    @Override
+    public Mono<Apply> updateStateOfApply(Long idApply, Integer idState) {
+        return repository.findById(idApply)
+                .flatMap(entity -> {
+                    entity.setIdState(idState);
+                    return repository.save(entity);
+                })
+                .map(entity -> mapper.map(entity, Apply.class));
+    }
+
 }

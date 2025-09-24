@@ -1,6 +1,7 @@
 package co.com.sti.api;
 
 import co.com.sti.api.dto.ApplyDTO;
+import co.com.sti.api.dto.ApplyUpdateDTO;
 import co.com.sti.api.dto.RequestDTO;
 import co.com.sti.api.exceptions.InvalidUserDataException;
 import co.com.sti.api.exceptions.NotContentException;
@@ -10,6 +11,7 @@ import co.com.sti.model.paginator.Pagination;
 import co.com.sti.model.paginator.SortBy;
 import co.com.sti.usecase.applyloan.IApplyLoanUseCase;
 import co.com.sti.usecase.requestapplylist.IRequestApplyListUseCase;
+import co.com.sti.usecase.updateapply.IUpdateApplyUseCase;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class Handler {
 
     private final IApplyLoanUseCase applyLoanUseCase;
     private final IRequestApplyListUseCase requestApplyListUseCase;
+    private final IUpdateApplyUseCase updateApplyUseCase;
     private final ApplyDTOMapper applyDTOMapper;
     private final RequestDTOMapper requestDTOMapper;
     private final Validator validator;
@@ -105,6 +108,24 @@ public class Handler {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(responseData);
                     }
+                });
+    }
+
+    public Mono<ServerResponse> updateApplyEntryPoint(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(ApplyUpdateDTO.class)
+                .flatMap(dto -> {
+                    if (dto.getIdApply() == null || dto.getIdState() == null) {
+                        return Mono.error(new InvalidUserDataException("El ID de la solicitud y el estado son obligatorios."));
+                    }
+                    return updateApplyUseCase.update(dto.getIdApply(), dto.getIdState());
+                })
+                .flatMap(updatedApply -> {
+                    log.info("Solicitud actualizada con éxito");
+                    Map<String, String> successMessage = new HashMap<>();
+                    successMessage.put("message", "Solicitud actualizada con éxito.");
+                    return ServerResponse.ok()
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(successMessage);
                 });
     }
 }

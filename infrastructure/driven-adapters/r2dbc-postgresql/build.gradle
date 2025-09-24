@@ -11,5 +11,8 @@ dependencies {
 
     testImplementation 'org.reactivecommons.utils:object-mapper:0.1.0'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    implementation 'software.amazon.awssdk:sqs:2.25.1'
+    implementation 'software.amazon.awssdk:auth:2.25.1'
 }
 

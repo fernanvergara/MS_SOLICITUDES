@@ -1,6 +1,7 @@
 package co.com.sti.api;
 
 import co.com.sti.api.dto.ApplyDTO;
+import co.com.sti.api.dto.ApplyUpdateDTO;
 import co.com.sti.api.dto.RequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,8 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
-import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import static org.springframework.web.reactive.function.server.RequestPredicates.*;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration
@@ -85,10 +85,44 @@ public class RouterRest {
                                                     schema = @Schema(implementation = String.class)))
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = PATH_APPLY,
+                    beanClass = Handler.class,
+                    beanMethod = "updateApplyEntryPoint",
+                    method = RequestMethod.PUT,
+                    operation = @Operation(
+                            operationId = "updateApply",
+                            summary = "Actualizar el estado de una solicitud de prestamo",
+                            description = "Permite a un asesor aprobar o rechazar una solicitud. Recibe el ID de la solicitud y el nuevo estado.",
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    description = "ID de la solicitud y el nuevo estado. Valores posibles para idState: APROBADO=4, RECHAZADO=3",
+                                    content = @Content(schema = @Schema(
+                                            implementation = ApplyUpdateDTO.class,
+                                            example = "{\n  \"idApply\": 123,\n  \"idState\": 4\n}"
+                                    ))
+                            ),
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "Solicitud actualizada con éxito",
+                                            content = @Content(mediaType = "application/json",
+                                                    schema = @Schema(implementation = String.class))),
+                                    @ApiResponse(responseCode = "400", description = "Estado de actualización inválido",
+                                            content = @Content(mediaType = "application/json",
+                                                    schema = @Schema(implementation = String.class))),
+                                    @ApiResponse(responseCode = "404", description = "Solicitud no encontrada",
+                                            content = @Content(mediaType = "application/json",
+                                                    schema = @Schema(implementation = String.class))),
+                                    @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+                                            content = @Content(mediaType = "application/json",
+                                                    schema = @Schema(implementation = String.class)))
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(Handler handler) {
         return route(POST(PATH_APPLY), handler::applyLoanEntryPoint)
-                .andRoute(GET(PATH_APPLY), handler::listLoanAppliesEntryPoint);
+                .andRoute(GET(PATH_APPLY), handler::listLoanAppliesEntryPoint)
+                .andRoute(PUT(PATH_APPLY), handler::updateApplyEntryPoint);
     }
 }
