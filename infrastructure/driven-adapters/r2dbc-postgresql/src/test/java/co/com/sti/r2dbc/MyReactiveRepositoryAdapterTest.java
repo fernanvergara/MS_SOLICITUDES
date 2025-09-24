@@ -6,7 +6,7 @@ import co.com.sti.model.request.Request;
 import co.com.sti.model.paginator.Pagination;
 import co.com.sti.model.paginator.SortBy;
 import co.com.sti.model.state.State;
-import co.com.sti.r2dbc.dto.UserDTO;
+import co.com.sti.model.drivenports.dto.UserDTO;
 import co.com.sti.r2dbc.entity.ApplyEntity;
 import co.com.sti.r2dbc.entity.TypeLoan;
 import co.com.sti.r2dbc.extras.UserExtrasImpl;
@@ -17,10 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -149,8 +145,8 @@ class MyReactiveRepositoryAdapterTest {
         StepVerifier.create(result)
                 .expectNextMatches(pagedResponse ->
                         !pagedResponse.getContent().isEmpty() &&
-                                pagedResponse.getContent().get(0).getNames().equals("John Doe") &&
-                                pagedResponse.getContent().get(0).getEmail().equals("john.doe@example.com") &&
+                                pagedResponse.getContent().getFirst().getNames().equals("John Doe") &&
+                                pagedResponse.getContent().getFirst().getEmail().equals("john.doe@example.com") &&
                                 pagedResponse.getTotalElements() == 1 &&
                                 pagedResponse.getTotalPages() == 1
                 )
@@ -237,7 +233,7 @@ class MyReactiveRepositoryAdapterTest {
                 "pass",
                 "987654321",
                 LocalDate.now(),
-                "0987654321", "" +
+                "0987654321",
                 "456 Oak St",
                 1,
                 BigDecimal.valueOf(20000));
@@ -275,7 +271,7 @@ class MyReactiveRepositoryAdapterTest {
         StepVerifier.create(result)
                 .expectNextMatches(pagedResponse ->
                         pagedResponse.getContent().size() == 2 &&
-                                pagedResponse.getContent().get(0).getNames().equals("John Doe") &&
+                                pagedResponse.getContent().getFirst().getNames().equals("John Doe") &&
                                 pagedResponse.getContent().get(1).getNames().equals("Jane Smith") &&
                                 pagedResponse.getTotalElements() == 2 &&
                                 pagedResponse.getTotalPages() == 1

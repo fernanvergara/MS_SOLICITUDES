@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS tipo_prestamo (
     monto_minimo NUMERIC(15, 2) NOT NULL,
     monto_maximo NUMERIC(15, 2) NOT NULL,
     tasa_interes NUMERIC(5, 2) NOT NULL,
-    validacion_automatica BOOLEAN NOT NULL DEFAULT FALSE,
+    validacion_automatica BOOLEAN NOT NULL DEFAULT TRUE,
     CHECK (monto_maximo > monto_minimo)
 );
 
@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS solicitud (
     plazo_maximo_dias INT NOT NULL,
     fecha_solicitud DATE DEFAULT CURRENT_DATE,
     id_estado INT NOT NULL,
-    id_tipo_prestamo INT NOT NULL
+    id_tipo_prestamo INT NOT NULL,
+    cuota_mensual NUMERIC(15, 2)
 );
 
 -- Opcional: Inserción de datos iniciales para las tablas de catálogo

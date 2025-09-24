@@ -1,6 +1,8 @@
 package co.com.sti.api.exceptions;
 
 import co.com.sti.model.drivenports.exceptions.ServiceUnavailableException;
+import co.com.sti.usecase.exception.ApplyNotExistsException;
+import co.com.sti.usecase.exception.InvalidStatusUpdateException;
 import co.com.sti.usecase.exception.UserAlreadyExistsException;
 import co.com.sti.usecase.exception.UserNotExistsException;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +64,24 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", ex.getMessage());
         log.error(errorResponse.toString());
         return Mono.just(ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorResponse));
+    }
+
+    @ExceptionHandler(ApplyNotExistsException.class)
+    public Mono<ResponseEntity<Map<String, String>>> handleApplyNotExistsException(ApplyNotExistsException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Solicitud no encontrada");
+        errorResponse.put("message", ex.getMessage());
+        log.error(errorResponse.toString());
+        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse));
+    }
+
+    @ExceptionHandler(InvalidStatusUpdateException.class)
+    public Mono<ResponseEntity<Map<String, String>>> handleInvalidStatusUpdateException(InvalidStatusUpdateException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Actualización de estado inválida");
+        errorResponse.put("message", ex.getMessage());
+        log.error(errorResponse.toString());
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse));
     }
 
     @ExceptionHandler(Exception.class)

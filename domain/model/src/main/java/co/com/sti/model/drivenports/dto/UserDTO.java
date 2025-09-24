@@ -1,4 +1,4 @@
-package co.com.sti.r2dbc.dto;
+package co.com.sti.model.drivenports.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

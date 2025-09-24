@@ -2,6 +2,7 @@ package co.com.sti.model.state;
 
 import lombok.Getter;
 
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Getter
@@ -22,14 +23,15 @@ public enum State {
         this.description = description;
     }
 
-    public int getIdState() {
-        return idState;
-    }
-
     public static State getById(int idState) {
         return Stream.of(State.values())
                 .filter(state -> state.getIdState() == idState)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Estado no existe con ID: " + idState));
+    }
+
+    public static boolean isFinalState(int idState) {
+        Set<Integer> finalStates = Set.of(REJECTED.getIdState(), APPROVED.getIdState());
+        return finalStates.contains(idState);
     }
 }

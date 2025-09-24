@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
 spring:
   application:
     name: "solicitudes"
@@ -7,18 +7,18 @@ spring:
     add-properties: false
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
-    url: "jdbc:postgresql://db_solicitudes:5432/solicitudes_db"
-    user: "postgres"
-    password: "Misional123@"
+    url: "jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+    user: "${DB_USERNAME}"
+    password: "${DB_PASSWORD}"
     clear-checksums: true
 adapters:
   r2dbc:
-    host: "db_solicitudes"
-    port: 5432
-    database: "solicitudes_db"
+    host: "${DB_HOST}"
+    port: ${DB_PORT}
+    database: "${DB_NAME}"
     schema: "public"
-    username: "postgres"
-    password: "Misional123@"
+    username: "${DB_USERNAME}"
+    password: "${DB_PASSWORD}"
 management:
   endpoints:
     web:
@@ -29,8 +29,7 @@ management:
       probes:
         enabled: true
 cors:
-  allowed-origins: "http://localhost:4201,http://localhost:8081"
-
+  allowed-origins: "${CORS_ALLOWED_ORIGINS}"
 routes:
   paths:
     tasks: "/api/v1/solicitud"
@@ -43,4 +42,9 @@ springdoc:
     path: "/api/doc/api-docs"
 
 jwt:
-  secret: c3ByaW5nLWJvb3Qtand0LXRva2VuLWdlbmVyYXRpb24tc2VjcmV0LWtleS13aGF0ZXZlci15b3UtY2FuLXRoaW5rLW9mLXRvLW1ha2UtaXQtcmFuZG9tLWFzLXlvdS1saWtlLWFzLXRvLWJl
+  secret: ${JWT_SECRET}
+
+aws:
+  sqs:
+    queueName: ${AWS_SQS_QUEUE_NAME:notifications-crediya}
+    region: ${AWS_REGION:us-east-1}
