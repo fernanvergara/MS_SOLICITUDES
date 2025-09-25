@@ -14,13 +14,6 @@ public class TypeLoanAdapter implements LoanTypeRepository {
     private final RepositoryLoanType repositoryLoanType;
     private final ObjectMapper mapper;
 
-//    @Override
-//    public Mono<Boolean> isAutomaticValidationEnabled(Integer idLoanType) {
-//        return repositoryLoanType.findById(idLoanType)
-//                .map(typeLoan -> typeLoan.getCheckAutomatic() != null && typeLoan.getCheckAutomatic())
-//                .defaultIfEmpty(true);
-//    }
-
     @Override
     public Mono<LoanType> findById(Integer idLoanType) {
         return repositoryLoanType.findById(idLoanType)

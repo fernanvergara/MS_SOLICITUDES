@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:8081}
+  port: 8081
 spring:
   application:
     name: "solicitudes"
@@ -7,18 +7,18 @@ spring:
     add-properties: false
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
-    url: "jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
-    user: "${DB_USERNAME}"
-    password: "${DB_PASSWORD}"
+    url: "${SOLICITUDES_DB_URL}"
+    user: "${SOLICITUDES_DB_USER}"
+    password: "${SOLICITUDES_DB_PASSWORD}"
     clear-checksums: true
 adapters:
   r2dbc:
-    host: "${DB_HOST}"
-    port: ${DB_PORT}
-    database: "${DB_NAME}"
+    host: "${SOLICITUDES_DB_HOST}"
+    port: ${SOLICITUDES_DB_PORT}
+    database: "${SOLICITUDES_DB_NAME}"
     schema: "public"
-    username: "${DB_USERNAME}"
-    password: "${DB_PASSWORD}"
+    username: "${SOLICITUDES_DB_USER}"
+    password: "${SOLICITUDES_DB_PASSWORD}"
 management:
   endpoints:
     web:
@@ -29,7 +29,7 @@ management:
       probes:
         enabled: true
 cors:
-  allowed-origins: "${CORS_ALLOWED_ORIGINS}"
+  allowed-origins: "http://localhost:4201,http://localhost:8081"
 routes:
   paths:
     tasks: "/api/v1/solicitud"
@@ -49,5 +49,5 @@ aws:
     notificationsQueueName: ${AWS_SQS_NOTIFICATIONS_QUEUE_NAME}
     loanValidationQueueName: ${AWS_SQS_VALIDATION_QUEUE_NAME}
     loanApprovedCountQueueName: ${AWS_SQS_COUNT_APPROVED_QUEUE_NAME}
-    region: ${AWS_REGION:us-east-1}
-    callBack: ${AWS_CALLBACK}
+    region: ${AWS_REGION}
+    callBack: ${AWS_CALLBACK_URL}
