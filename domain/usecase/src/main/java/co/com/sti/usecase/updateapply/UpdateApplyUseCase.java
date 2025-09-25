@@ -3,6 +3,7 @@ package co.com.sti.usecase.updateapply;
 import co.com.sti.model.apply.Apply;
 import co.com.sti.model.apply.gateways.ApplyRepository;
 import co.com.sti.model.drivenports.IUserExtras;
+import co.com.sti.model.sqsservices.DataForReports;
 import co.com.sti.model.sqsservices.Notification;
 import co.com.sti.model.sqsservices.gateways.SQSGateway;
 import co.com.sti.model.state.State;
@@ -40,7 +41,11 @@ public class UpdateApplyUseCase implements IUpdateApplyUseCase{
                             userExtras.dataUser(updatedApply.getNumberIdentity())
                                     .flatMap(user -> {
                                         if(updatedApply.getIdState().equals(State.APPROVED.getIdState())){
-                                            sqsGateway.sendToAprovedCount(updatedApply.getIdApply());
+                                            sqsGateway.sendToAprovedCount(DataForReports.builder()
+                                                                                        .id( updatedApply.getIdApply())
+                                                                                        .numberIdentity(updatedApply.getNumberIdentity())
+                                                                                        .amount(updatedApply.getAmount())
+                                                                                        .build());
                                         }
                                         if(notify){
                                             String customMessage;

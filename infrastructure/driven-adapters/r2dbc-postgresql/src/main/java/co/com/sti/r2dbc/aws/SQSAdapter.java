@@ -1,6 +1,7 @@
 package co.com.sti.r2dbc.aws;
 
 import co.com.sti.model.sqsservices.ApplyLoanMessage;
+import co.com.sti.model.sqsservices.DataForReports;
 import co.com.sti.model.sqsservices.Notification;
 import co.com.sti.model.sqsservices.gateways.SQSGateway;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -93,10 +94,15 @@ public class SQSAdapter implements SQSGateway {
     }
 
     @Override
-    public Mono<Void> sendToAprovedCount(Long idLoan) {
-        log.info("Enviando mensaje a la cola de contador: {}", idLoan);
+    public Mono<Void> sendToAprovedCount(DataForReports dataForReports) {
+        log.info("Enviando mensaje a la cola de reportes: {}", dataForReports);
         return Mono.fromCallable(() -> {
-                        return String.format("{\"idLoan\":\"%s\"}", idLoan);
+                    try {
+                        return objectMapper.writeValueAsString(dataForReports);
+                    } catch (JsonProcessingException e) {
+                        log.error("Error al convertir los datos para reportes a JSON: {}", e.getMessage());
+                        return Mono.error( new RuntimeException("Error de serialización de los datos para reportes.", e) );
+                    }
                 })
                 .flatMap(messageBody -> {
                     GetQueueUrlRequest getQueueUrlRequest = GetQueueUrlRequest.builder().queueName(loanApprovedCountQueueName).build();
@@ -105,7 +111,7 @@ public class SQSAdapter implements SQSGateway {
                                 String queueUrl = getQueueUrlResponse.queueUrl();
                                 SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
                                         .queueUrl(queueUrl)
-                                        .messageBody(messageBody)
+                                        .messageBody((String) messageBody)
                                         .build();
 
                                 return Mono.fromFuture(sqsAsyncClient.sendMessage(sendMessageRequest))
