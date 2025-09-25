@@ -8,7 +8,7 @@ import co.com.sti.model.paginator.SortBy;
 import co.com.sti.model.state.State;
 import co.com.sti.model.drivenports.dto.UserDTO;
 import co.com.sti.r2dbc.entity.ApplyEntity;
-import co.com.sti.r2dbc.entity.TypeLoan;
+import co.com.sti.r2dbc.entity.LoanTypeEntity;
 import co.com.sti.r2dbc.extras.UserExtrasImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class MyReactiveRepositoryAdapterTest {
     private RepositoryApply repository;
 
     @Mock
-    private RepositoryTypeLoan repositoryTypeLoan;
+    private RepositoryLoanType repositoryTypeLoan;
 
     @Mock
     private ObjectMapper mapper;
@@ -51,7 +51,7 @@ class MyReactiveRepositoryAdapterTest {
     private ApplyEntity applyEntity;
     private ApplyEntity savedApplyEntity;
     private UserDTO userDTO;
-    private TypeLoan typeLoan;
+    private LoanTypeEntity typeLoan;
 
     @BeforeEach
     public void setup() {
@@ -90,7 +90,7 @@ class MyReactiveRepositoryAdapterTest {
                 1,
                 BigDecimal.valueOf(10000));
 
-        typeLoan = new TypeLoan(
+        typeLoan = new LoanTypeEntity(
                 1,
                 "TestLoan",
                 BigDecimal.ZERO,
@@ -238,7 +238,7 @@ class MyReactiveRepositoryAdapterTest {
                 1,
                 BigDecimal.valueOf(20000));
 
-        TypeLoan typeLoan2 = new TypeLoan(
+        LoanTypeEntity typeLoan2 = new LoanTypeEntity(
                 2,
                 "TestLoan",
                 BigDecimal.ZERO,

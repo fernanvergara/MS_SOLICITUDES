@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Builder
-public class TypeLoan {
+public class LoanTypeEntity {
 
     @Id
     @Column("id_tipo")

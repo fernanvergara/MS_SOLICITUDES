@@ -9,6 +9,7 @@ import co.com.sti.api.mapper.ApplyDTOMapper;
 import co.com.sti.api.mapper.RequestDTOMapper;
 import co.com.sti.model.paginator.Pagination;
 import co.com.sti.model.paginator.SortBy;
+import co.com.sti.model.state.State;
 import co.com.sti.usecase.applyloan.IApplyLoanUseCase;
 import co.com.sti.usecase.requestapplylist.IRequestApplyListUseCase;
 import co.com.sti.usecase.updateapply.IUpdateApplyUseCase;
@@ -117,10 +118,26 @@ public class Handler {
                     if (dto.getIdApply() == null || dto.getIdState() == null) {
                         return Mono.error(new InvalidUserDataException("El ID de la solicitud y el estado son obligatorios."));
                     }
-                    return updateApplyUseCase.update(dto.getIdApply(), dto.getIdState());
+                    return updateApplyUseCase.update(dto.getIdApply(), dto.getIdState(), true);
                 })
                 .flatMap(updatedApply -> {
                     log.info("Solicitud actualizada con éxito");
+                    Map<String, String> successMessage = new HashMap<>();
+                    successMessage.put("message", "Solicitud actualizada con éxito.");
+                    return ServerResponse.ok()
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(successMessage);
+                });
+    }
+
+    public Mono<ServerResponse> handleCallback(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(ApplyUpdateDTO.class)
+                .flatMap(dto -> {
+                    log.info("Callback recibido para el préstamo con ID {} y nuevo estado {}", dto.getIdApply(), dto.getIdState());
+                    return updateApplyUseCase.update(dto.getIdApply(), dto.getIdState(), false);
+                })
+                .flatMap(updatedApply -> {
+                    log.info("Solicitud de préstamo actualizada con éxito a estado {}", State.getById(updatedApply.getIdState()).getName() );
                     Map<String, String> successMessage = new HashMap<>();
                     successMessage.put("message", "Solicitud actualizada con éxito.");
                     return ServerResponse.ok()

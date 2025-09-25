@@ -6,6 +6,7 @@ import co.com.sti.model.paginator.PagedResponse;
 import co.com.sti.model.request.Request;
 import co.com.sti.model.paginator.Pagination;
 import co.com.sti.model.state.State;
+import co.com.sti.model.loan.LoanDTO;
 import co.com.sti.r2dbc.entity.ApplyEntity;
 import co.com.sti.r2dbc.extras.UserExtrasImpl;
 import co.com.sti.r2dbc.helper.ReactiveAdapterOperations;
@@ -33,13 +34,13 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
 > implements ApplyRepository {
 
     private final UserExtrasImpl userExtras;
-    private final RepositoryTypeLoan repositoryTypeLoan;
+    private final RepositoryLoanType repositoryLoanType;
 
-    public MyReactiveRepositoryAdapter(RepositoryApply repository, ObjectMapper mapper, UserExtrasImpl userExtras, RepositoryTypeLoan repositoryTypeLoan) {
+    public MyReactiveRepositoryAdapter(RepositoryApply repository, ObjectMapper mapper, UserExtrasImpl userExtras, RepositoryLoanType repositoryLoanType) {
 
         super(repository, mapper, d -> mapper.map(d, Apply.class));
         this.userExtras = userExtras;
-        this.repositoryTypeLoan = repositoryTypeLoan;
+        this.repositoryLoanType = repositoryLoanType;
     }
 
     @Override
@@ -75,7 +76,7 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
                                                 log.error("Error fetching user data for {}: {}", entity.getNumberIdentity(), err1.getMessage());
                                                 return Mono.empty();
                                             }),
-                                    repositoryTypeLoan.findById(entity.getIdLoanType())
+                                    repositoryLoanType.findById(entity.getIdLoanType())
                                             .onErrorResume(err2 -> {
                                                 log.error("Error fetching loan type data for ID {}: {}", entity.getIdLoanType(), err2.getMessage());
                                                 return Mono.empty();
@@ -152,6 +153,22 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<
                     return repository.save(entity);
                 })
                 .map(entity -> mapper.map(entity, Apply.class));
+    }
+
+    @Override
+    public Flux<LoanDTO> getActiveLoansByUserId(String numberIdentity) {
+        return repository.findAllByNumberIdentityAndIdState(numberIdentity, State.APPROVED.getIdState())
+                .flatMap(entity -> {
+                    return repositoryLoanType.findById(entity.getIdLoanType())
+                            .map(loanType -> {
+                                return LoanDTO.builder()
+                                        .id(entity.getId())
+                                        .amount(entity.getAmount())
+                                        .monthlyFee( Math.divideExact( entity.getTimeLimit(), 30) + (entity.getTimeLimit() % 30 > 0 ? 1 : 0))
+                                        .interestRate(loanType.getRateInterest())
+                                        .build();
+                            });
+                });
     }
 
 }

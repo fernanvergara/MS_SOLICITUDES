@@ -1,4 +1,4 @@
-package co.com.sti.model.notification;
+package co.com.sti.model.sqsservices;
 
 import lombok.Builder;
 import lombok.Data;

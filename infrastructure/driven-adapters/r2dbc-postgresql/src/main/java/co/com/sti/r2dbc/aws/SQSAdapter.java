@@ -1,7 +1,8 @@
 package co.com.sti.r2dbc.aws;
 
-import co.com.sti.model.notification.Notification;
-import co.com.sti.model.notification.gateways.SQSGateway;
+import co.com.sti.model.sqsservices.ApplyLoanMessage;
+import co.com.sti.model.sqsservices.Notification;
+import co.com.sti.model.sqsservices.gateways.SQSGateway;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,14 @@ public class SQSAdapter implements SQSGateway {
     private final ObjectMapper objectMapper;
     private final SqsAsyncClient sqsAsyncClient;
 
-    @Value("${aws.sqs.queueName}")
-    private String queueName;
+    @Value("${aws.sqs.notificationsQueueName}")
+    private String notificationsQueueName;
+
+    @Value("${aws.sqs.loanValidationQueueName}")
+    private String loanValidationQueueName;
+
+    @Value("${aws.sqs.loanApprovedCountQueueName}")
+    private String loanApprovedCountQueueName;
 
     public SQSAdapter(ObjectMapper objectMapper, SqsAsyncClient sqsAsyncClient) {
         this.objectMapper = objectMapper;
@@ -35,12 +42,12 @@ public class SQSAdapter implements SQSGateway {
                         return objectMapper.writeValueAsString(notification);
                     } catch (JsonProcessingException e) {
                         log.error("Error al convertir la notificación a JSON: {}", e.getMessage());
-                        throw new RuntimeException("Error de serialización de la notificación.", e);
+                        return Mono.error( new RuntimeException("Error de serialización de la notificación.", e) );
                     }
                 })
                 .flatMap(messageBody -> {
                     // Obtener la URL de la cola de forma no-bloqueante
-                    GetQueueUrlRequest getQueueUrlRequest = GetQueueUrlRequest.builder().queueName(queueName).build();
+                    GetQueueUrlRequest getQueueUrlRequest = GetQueueUrlRequest.builder().queueName(notificationsQueueName).build();
                     return Mono.fromFuture(sqsAsyncClient.getQueueUrl(getQueueUrlRequest))
                             .flatMap(getQueueUrlResponse -> {
                                 String queueUrl = getQueueUrlResponse.queueUrl();
@@ -56,4 +63,61 @@ public class SQSAdapter implements SQSGateway {
                             });
                 });
     }
+
+    @Override
+    public Mono<Void> sendToValidationQueue(ApplyLoanMessage message) {
+        log.info("Enviando mensaje a la cola de validación: {}", message);
+        return Mono.fromCallable(() -> {
+                    try {
+                        return objectMapper.writeValueAsString(message);
+                    } catch (JsonProcessingException e) {
+                        log.error("Error al convertir el mensaje de validación a JSON: {}", e.getMessage());
+                        return Mono.error( new RuntimeException("Error de serialización del mensaje de validación.", e) );
+                    }
+                })
+                .flatMap(messageBody -> {
+                    GetQueueUrlRequest getQueueUrlRequest = GetQueueUrlRequest.builder().queueName(loanValidationQueueName).build();
+                    return Mono.fromFuture(sqsAsyncClient.getQueueUrl(getQueueUrlRequest))
+                            .flatMap(getQueueUrlResponse -> {
+                                String queueUrl = getQueueUrlResponse.queueUrl();
+                                SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
+                                        .queueUrl(queueUrl)
+                                        .messageBody(messageBody)
+                                        .build();
+
+                                return Mono.fromFuture(sqsAsyncClient.sendMessage(sendMessageRequest))
+                                        .doOnSuccess(response -> log.info("Mensaje enviado a la cola de validación con éxito."))
+                                        .then();
+                            });
+                });
+    }
+
+    @Override
+    public Mono<Void> sendToAprovedCount(Long idApply) {
+        log.info("Enviando mensaje a la cola de contador: {}", idApply);
+        return Mono.fromCallable(() -> {
+                    try {
+                        return objectMapper.writeValueAsString(idApply);
+                    } catch (JsonProcessingException e) {
+                        log.error("Error al convertir el mensaje de validación a JSON: {}", e.getMessage());
+                        return Mono.error( new RuntimeException("Error de serialización del mensaje de validación.", e) );
+                    }
+                })
+                .flatMap(messageBody -> {
+                    GetQueueUrlRequest getQueueUrlRequest = GetQueueUrlRequest.builder().queueName(loanValidationQueueName).build();
+                    return Mono.fromFuture(sqsAsyncClient.getQueueUrl(getQueueUrlRequest))
+                            .flatMap(getQueueUrlResponse -> {
+                                String queueUrl = getQueueUrlResponse.queueUrl();
+                                SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
+                                        .queueUrl(queueUrl)
+                                        .messageBody(messageBody)
+                                        .build();
+
+                                return Mono.fromFuture(sqsAsyncClient.sendMessage(sendMessageRequest))
+                                        .doOnSuccess(response -> log.info("Mensaje enviado a la cola de validación con éxito."))
+                                        .then();
+                            });
+                });
+    }
+
 }
