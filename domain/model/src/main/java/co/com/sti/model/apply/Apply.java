@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Apply {
-
+    private Long idApply;
     private String numberIdentity;
     private BigDecimal amount;
     private Integer timeLimit;

@@ -40,7 +40,7 @@ public class UpdateApplyUseCase implements IUpdateApplyUseCase{
                             userExtras.dataUser(updatedApply.getNumberIdentity())
                                     .flatMap(user -> {
                                         if(updatedApply.getIdState().equals(State.APPROVED.getIdState())){
-
+                                            sqsGateway.sendToAprovedCount(updatedApply.getIdApply());
                                         }
                                         if(notify){
                                             String customMessage;

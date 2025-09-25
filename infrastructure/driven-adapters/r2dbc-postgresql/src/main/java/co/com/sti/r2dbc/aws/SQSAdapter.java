@@ -53,7 +53,7 @@ public class SQSAdapter implements SQSGateway {
                                 String queueUrl = getQueueUrlResponse.queueUrl();
                                 SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
                                         .queueUrl(queueUrl)
-                                        .messageBody(messageBody)
+                                        .messageBody((String) messageBody)
                                         .build();
 
                                 // Enviar el mensaje de forma no-bloqueante
@@ -82,7 +82,7 @@ public class SQSAdapter implements SQSGateway {
                                 String queueUrl = getQueueUrlResponse.queueUrl();
                                 SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
                                         .queueUrl(queueUrl)
-                                        .messageBody(messageBody)
+                                        .messageBody((String) messageBody)
                                         .build();
 
                                 return Mono.fromFuture(sqsAsyncClient.sendMessage(sendMessageRequest))
@@ -93,18 +93,13 @@ public class SQSAdapter implements SQSGateway {
     }
 
     @Override
-    public Mono<Void> sendToAprovedCount(Long idApply) {
-        log.info("Enviando mensaje a la cola de contador: {}", idApply);
+    public Mono<Void> sendToAprovedCount(Long idLoan) {
+        log.info("Enviando mensaje a la cola de contador: {}", idLoan);
         return Mono.fromCallable(() -> {
-                    try {
-                        return objectMapper.writeValueAsString(idApply);
-                    } catch (JsonProcessingException e) {
-                        log.error("Error al convertir el mensaje de validación a JSON: {}", e.getMessage());
-                        return Mono.error( new RuntimeException("Error de serialización del mensaje de validación.", e) );
-                    }
+                        return String.format("{\"idLoan\":\"%s\"}", idLoan);
                 })
                 .flatMap(messageBody -> {
-                    GetQueueUrlRequest getQueueUrlRequest = GetQueueUrlRequest.builder().queueName(loanValidationQueueName).build();
+                    GetQueueUrlRequest getQueueUrlRequest = GetQueueUrlRequest.builder().queueName(loanApprovedCountQueueName).build();
                     return Mono.fromFuture(sqsAsyncClient.getQueueUrl(getQueueUrlRequest))
                             .flatMap(getQueueUrlResponse -> {
                                 String queueUrl = getQueueUrlResponse.queueUrl();
@@ -114,7 +109,7 @@ public class SQSAdapter implements SQSGateway {
                                         .build();
 
                                 return Mono.fromFuture(sqsAsyncClient.sendMessage(sendMessageRequest))
-                                        .doOnSuccess(response -> log.info("Mensaje enviado a la cola de validación con éxito."))
+                                        .doOnSuccess(response -> log.info("Mensaje enviado a la cola de contador de prestamos aprobados con éxito."))
                                         .then();
                             });
                 });
