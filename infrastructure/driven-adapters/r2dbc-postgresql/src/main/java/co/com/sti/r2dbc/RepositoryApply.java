@@ -10,4 +10,6 @@ import java.util.List;
 public interface RepositoryApply extends ReactiveCrudRepository<ApplyEntity, Long>, ReactiveQueryByExampleExecutor<ApplyEntity> {
 
     Flux<ApplyEntity> findAllByIdStateIn(List<Integer> states);
+
+    Flux<ApplyEntity> findAllByNumberIdentityAndIdState(String numberIdentity, Integer idState );
 }

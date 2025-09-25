@@ -25,6 +25,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 public class RouterRest {
 
     private static final String PATH_APPLY = "/api/v1/solicitud";
+    private static final String PATH_CALLBACK = "/api/v1/callback";
 
     @Bean
     @RouterOperations({
@@ -123,6 +124,7 @@ public class RouterRest {
     public RouterFunction<ServerResponse> routerFunction(Handler handler) {
         return route(POST(PATH_APPLY), handler::applyLoanEntryPoint)
                 .andRoute(GET(PATH_APPLY), handler::listLoanAppliesEntryPoint)
-                .andRoute(PUT(PATH_APPLY), handler::updateApplyEntryPoint);
+                .andRoute(PUT(PATH_APPLY), handler::updateApplyEntryPoint)
+                .andRoute(PUT(PATH_CALLBACK), handler::handleCallback);
     }
 }

@@ -46,5 +46,8 @@ jwt:
 
 aws:
   sqs:
-    queueName: ${AWS_SQS_QUEUE_NAME:notifications-crediya}
+    notificationsQueueName: ${AWS_SQS_NOTIFICATIONS_QUEUE_NAME}
+    loanValidationQueueName: ${AWS_SQS_VALIDATION_QUEUE_NAME}
+    loanApprovedCountQueueName: ${AWS_SQS_COUNT_APPROVED_QUEUE_NAME}
     region: ${AWS_REGION:us-east-1}
+    callBack: ${AWS_CALLBACK}

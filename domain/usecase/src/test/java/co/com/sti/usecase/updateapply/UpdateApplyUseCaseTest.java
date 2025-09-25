@@ -4,7 +4,7 @@ import co.com.sti.model.apply.Apply;
 import co.com.sti.model.apply.gateways.ApplyRepository;
 import co.com.sti.model.drivenports.IUserExtras;
 import co.com.sti.model.drivenports.dto.UserDTO;
-import co.com.sti.model.notification.gateways.SQSGateway;
+import co.com.sti.model.sqsservices.gateways.SQSGateway;
 import co.com.sti.model.state.State;
 import co.com.sti.usecase.exception.ApplyNotExistsException;
 import co.com.sti.usecase.exception.InvalidStatusUpdateException;

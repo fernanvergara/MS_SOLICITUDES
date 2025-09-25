@@ -2,7 +2,8 @@ package co.com.sti.config;
 
 import co.com.sti.model.apply.gateways.ApplyRepository;
 import co.com.sti.model.drivenports.IUserExtras;
-import co.com.sti.model.notification.gateways.SQSGateway;
+import co.com.sti.model.loan.gateways.LoanTypeRepository;
+import co.com.sti.model.sqsservices.gateways.SQSGateway;
 import co.com.sti.usecase.applyloan.ApplyLoanUseCase;
 import co.com.sti.usecase.requestapplylist.RequestApplyListUseCase;
 import co.com.sti.usecase.transaction.TransactionExecutor;
@@ -22,9 +23,11 @@ public class UseCasesConfig {
 
     @Bean
     public ApplyLoanUseCase applyLoanUseCase(ApplyRepository applyRepository,
-                                             IUserExtras userExistenceChecker,
-                                             TransactionExecutor transactionExecutor){
-        return new ApplyLoanUseCase(applyRepository, userExistenceChecker, transactionExecutor);
+                                            IUserExtras userExtras,
+                                            LoanTypeRepository loanTypeRepository,
+                                            TransactionExecutor transactionExecutor,
+                                            SQSGateway sqsGateway){
+        return new ApplyLoanUseCase(applyRepository, userExtras, loanTypeRepository, transactionExecutor,  sqsGateway);
     }
 
     @Bean
